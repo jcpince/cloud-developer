@@ -288,6 +288,54 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Unauthorized access",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "cf411216-249c-47af-af51-c25bdf9b4187",
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"auth is false and a message is included in the error body\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).to.not.eql(null);",
+							"    pm.expect(jsonData.message).to.not.eql(null)",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/filteredimage?image_url=https://cdn.pixabay.com/photo/2020/04/09/11/42/dogs-5021084__340.jpg",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"filteredimage"
+					],
+					"query": [
+						{
+							"key": "image_url",
+							"value": "https://cdn.pixabay.com/photo/2020/04/09/11/42/dogs-5021084__340.jpg"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -314,17 +362,17 @@
 	],
 	"variable": [
 		{
-			"id": "cd171448-0bd0-402e-996d-8f5838a3e0ee",
-			"key": "host",
+			"id": "43896f29-9fa8-43f9-801f-f6fd14425344",
+			"key": "host0",
 			"value": "localhost:8082"
 		},
 		{
-			"id": "c4c309ff-adbd-4dc4-8b10-834169ace5dd",
-			"key": "host1",
+			"id": "20dd8f91-302f-487a-9814-b2fd27b7f16e",
+			"key": "host",
 			"value": ""
 		},
 		{
-			"id": "816a425b-4ea5-437d-9aa6-51c338f2460d",
+			"id": "063a89b9-242e-4fc6-9501-62bb779611c8",
 			"key": "token",
 			"value": "eyJhbGciOiJIUzI1NiJ9.dG90b0B0aXRpLmNvbQ.lwx5OrB4KJR4cH6fZnXnIcLAqmQHyyI2JSP0ATdyDa8"
 		}
