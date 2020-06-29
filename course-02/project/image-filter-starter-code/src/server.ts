@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import {filterImageFromURL, deleteLocalFiles, isURLValid} from './util/util';
+import {requireAuth, jwtSecret, generateJWT} from './util/util';
 
 (async () => {
 
@@ -8,12 +9,11 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   const app = express();
 
   // Set the network port
-  const port = process.env.PORT || 8082;
+  const port = process.env.PORT || 8080;
   
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
 
-  // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
   // endpoint to filter an image from a public url.
   // IT SHOULD
@@ -26,18 +26,70 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   //    image_url: URL of a publicly accessible image
   // RETURNS
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
+  // > try it {{host}}/filteredimage?image_url={{URL}}
+  app.get( "/filteredimage/",
+    requireAuth,
+    async ( req, res) => {
+    let { image_url } = req.query;
 
-  /**************************************************************************** */
+    if ( !image_url ) {
+      return res.status(400)
+                .send(`image_url is required`);
+    }
 
-  //! END @TODO1
+    var valid_url = await isURLValid(image_url);
+    if ( ! valid_url ) {
+        const error_msg : String = `${ image_url } is not a valid url`;
+        console.error(error_msg);
+        return res.status(404).send(error_msg);
+    }
+
+    try {
+      var outpath = await filterImageFromURL(image_url);
+      if (!outpath) {
+        console.error(`filterImageFromURL failed`);
+        return res.status(500).send("Internal filtering error");
+      }
+      res.sendFile(outpath, function(err) {
+        console.log(`Deleting local file ${outpath}`);
+        deleteLocalFiles( [ outpath ] );
+        if (err) {
+          console.error(`${ err.name } while sending ${ outpath }: ${ err.message }`);
+          res.end();
+          res.status(500).send("Internal sending error");
+        } else {
+          res.status(200);
+        }
+      });
+    }
+    catch (error) {
+      console.error(error);
+      // A fs error could occur here
+      return res.status(500).send("Internal error");
+    }
+  } )
+
+  app.post('/login', async (req, res) => {
+      const email = req.body.email;
+  
+      // Generate JWT
+      try {
+          console.log(`\n\nGenerating a JWT for ${email} with ${jwtSecret}`);
+          const jwt = generateJWT(email);
+          console.log(`Sending a JWT token ${ jwt } \n\n`);
+          res.status(200).send({ auth: true, token: jwt, user: email});
+      } catch (error) {
+          console.error(error);
+          return res.status(401).send({ auth: false, message: 'JWT generation error' });
+      }
+  });
   
   // Root Endpoint
   // Displays a simple message to the user
   app.get( "/", async ( req, res ) => {
     res.send("try GET /filteredimage?image_url={{}}")
   } );
-  
-
+ 
   // Start the Server
   app.listen( port, () => {
       console.log( `server running http://localhost:${ port }` );
