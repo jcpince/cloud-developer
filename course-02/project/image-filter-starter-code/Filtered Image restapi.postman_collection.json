@@ -6,6 +6,46 @@
 	},
 	"item": [
 		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e71a8473-7581-4594-8d76-e00b3b7b23ea",
+						"exec": [
+							"var jdata = JSON.parse(responseBody);",
+							"pm.environment.set(\"token\", jdata.token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"toto@titi.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/login",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Get filtered Image - valid url",
 			"event": [
 				{
@@ -32,6 +72,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -80,6 +130,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -127,11 +187,33 @@
 					}
 				}
 			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "http://{{host}}/filteredimage?image_url=photo/2020/04",
+					"raw": "http://{{host}}/filteredimage?image_url=photo/2020/04/09",
 					"protocol": "http",
 					"host": [
 						"{{host}}"
@@ -142,7 +224,7 @@
 					"query": [
 						{
 							"key": "image_url",
-							"value": "photo/2020/04"
+							"value": "photo/2020/04/09"
 						}
 					]
 				}
@@ -176,6 +258,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -222,9 +314,19 @@
 	],
 	"variable": [
 		{
-			"id": "ea06bdd2-712d-44fa-b399-9330e52c33bd",
+			"id": "cd171448-0bd0-402e-996d-8f5838a3e0ee",
 			"key": "host",
 			"value": "localhost:8082"
+		},
+		{
+			"id": "c4c309ff-adbd-4dc4-8b10-834169ace5dd",
+			"key": "host1",
+			"value": ""
+		},
+		{
+			"id": "816a425b-4ea5-437d-9aa6-51c338f2460d",
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiJ9.dG90b0B0aXRpLmNvbQ.lwx5OrB4KJR4cH6fZnXnIcLAqmQHyyI2JSP0ATdyDa8"
 		}
 	],
 	"protocolProfileBehavior": {}

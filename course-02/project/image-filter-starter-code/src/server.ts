@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import {filterImageFromURL, deleteLocalFiles, isURLValid, requireAuth} from './util/util';
+import {filterImageFromURL, deleteLocalFiles, isURLValid} from './util/util';
+import {requireAuth, jwtSecret, generateJWT} from './util/util';
 
 (async () => {
 
@@ -8,7 +9,7 @@ import {filterImageFromURL, deleteLocalFiles, isURLValid, requireAuth} from './u
   const app = express();
 
   // Set the network port
-  const port = process.env.PORT || 8082;
+  const port = process.env.PORT || 8080;
   
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
@@ -67,6 +68,21 @@ import {filterImageFromURL, deleteLocalFiles, isURLValid, requireAuth} from './u
       return res.status(500).send("Internal error");
     }
   } )
+
+  app.post('/login', async (req, res) => {
+      const email = req.body.email;
+  
+      // Generate JWT
+      try {
+          console.log(`\n\nGenerating a JWT for ${email} with ${jwtSecret}`);
+          const jwt = generateJWT(email);
+          console.log(`Sending a JWT token ${ jwt } \n\n`);
+          res.status(200).send({ auth: true, token: jwt, user: email});
+      } catch (error) {
+          console.error(error);
+          return res.status(401).send({ auth: false, message: 'JWT generation error' });
+      }
+  });
   
   // Root Endpoint
   // Displays a simple message to the user
