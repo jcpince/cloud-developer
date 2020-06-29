@@ -1,8 +1,11 @@
 import fs from 'fs';
 import Jimp = require('jimp');
 import { resolve } from 'bluebird';
+import * as jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
 
 const urlExist = require("url-exist");
+export const jwtSecret = process.env.JWT_SECRET;
 
 // filterImageFromURL
 // helper function to download, filter, and save the filtered image locally
@@ -53,4 +56,46 @@ export async function isURLValid(image_url: String) : Promise<boolean> {
     }
 
     return res;
+}
+
+export function generateJWT(user: String): string {
+    // Use jwt to create a new JWT Payload containing
+    console.info(`Signing token ${ user } with ${ jwtSecret }.`)
+    return jwt.sign(user, jwtSecret);
+}
+
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+
+    if (!req.headers || !req.headers.authorization){
+        console.error('No authorization headers.')
+        return res.status(401).send({ message: 'No authorization headers.' });
+    }
+    return next();
+
+    // Token is in the form Bearer jkbahjksgbdjagdfgakjhgs
+    const token_bearer = req.headers.authorization.split(' ');
+    if(token_bearer.length != 2){
+        console.error(`Malformed token ${ req.headers.authorization } -- len ${ token_bearer.length }.`)
+        var i;
+        for (i = 0; i < token_bearer.length; i++) {
+            console.error(`token_bearer[${i}]: ${ token_bearer[i] }`)
+        }
+        return res.status(401).send({ message: 'Malformed token.' });
+    } else {
+        console.info(`Well formed token ${ req.headers.authorization }.`)
+        var i;
+        for (i = 0; i < token_bearer.length; i++) {
+            console.info(`token_bearer[${i}]: ${ token_bearer[i] }`)
+        }
+    }
+    
+    const token = token_bearer[1];
+
+    return jwt.verify(token, jwtSecret, (err, decoded) => {
+      if (err) {
+        console.error(`Wrong token ${ token } .`)
+        return res.status(500).send({ auth: false, message: 'Failed to authenticate.' });
+      }
+      return next();
+    });
 }
