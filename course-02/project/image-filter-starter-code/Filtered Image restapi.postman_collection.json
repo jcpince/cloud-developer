@@ -1,0 +1,231 @@
+{
+	"info": {
+		"_postman_id": "f3d711f9-6812-4fb1-8907-ca67c6bfccd1",
+		"name": "Filtered Image restapi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get filtered Image - valid url",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "431cb396-1295-40dc-8bec-3bd935ef2b48",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Header is an image\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.response.to.be.header(\"Content-Type\", \"image/jpeg\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response time is less than 600ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(600);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/filteredimage?image_url=https://cdn.pixabay.com/photo/2020/04/09/11/42/dogs-5021084__340.jpg",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"filteredimage"
+					],
+					"query": [
+						{
+							"key": "image_url",
+							"value": "https://cdn.pixabay.com/photo/2020/04/09/11/42/dogs-5021084__340.jpg"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get filtered Image - non existing url",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e67dc122-209f-4a68-a0de-84a3d8682dae",
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Header is not an image\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.response.to.be.header(\"Content-Type\", \"text/html; charset=utf-8\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response time is less than 6000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(6000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/filteredimage?image_url=https://paxabay.com/photo/2020/04/09/11/42/dogs-5021084__340.jpg",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"filteredimage"
+					],
+					"query": [
+						{
+							"key": "image_url",
+							"value": "https://paxabay.com/photo/2020/04/09/11/42/dogs-5021084__340.jpg"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get filtered Image - invalid url",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "696be09e-01c5-477c-a03f-228039afc086",
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Header is not an image\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.response.to.be.header(\"Content-Type\", \"text/html; charset=utf-8\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/filteredimage?image_url=photo/2020/04",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"filteredimage"
+					],
+					"query": [
+						{
+							"key": "image_url",
+							"value": "photo/2020/04"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get filtered Image - non JPEG url",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "60749c1d-cbd5-4bb9-b705-4a6950ca5060",
+						"exec": [
+							"pm.test(\"Status code is 500\", function () {",
+							"    pm.response.to.have.status(500);",
+							"});",
+							"",
+							"pm.test(\"Header is not an image\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.response.to.be.header(\"Content-Type\", \"text/html; charset=utf-8\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response time is less than 600ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(600);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/filteredimage?image_url=https://www.google.com",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"filteredimage"
+					],
+					"query": [
+						{
+							"key": "image_url",
+							"value": "https://www.google.com"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "06ea526b-209c-4d5e-bc02-c504c60c4766",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "727b05bf-99c0-44f4-a950-06dbb2c0ef2e",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "ea06bdd2-712d-44fa-b399-9330e52c33bd",
+			"key": "host",
+			"value": "localhost:8082"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
