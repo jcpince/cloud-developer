@@ -70,7 +70,6 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
         console.error('No authorization headers.')
         return res.status(401).send({ message: 'No authorization headers.' });
     }
-    return next();
 
     // Token is in the form Bearer jkbahjksgbdjagdfgakjhgs
     const token_bearer = req.headers.authorization.split(' ');
