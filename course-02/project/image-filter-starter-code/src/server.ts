@@ -29,7 +29,7 @@ import {requireAuth, jwtSecret, generateJWT} from './util/util';
   // > try it {{host}}/filteredimage?image_url={{URL}}
   app.get( "/filteredimage/",
     requireAuth,
-    async ( req, res) => {
+    async ( req: express.Request, res: express.Response ) => {
     let { image_url } = req.query;
 
     if ( !image_url ) {
