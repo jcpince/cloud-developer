@@ -1,5 +1,13 @@
 # Udagram Image Filtering Microservice
 
+## STUDENT NOTES
+I have written a non-regression test suite with Postman allowing me to exercise the different errors that could happen with the provided API.
+It also provides a token to exercise the authorization and check the authorization failure.
+
+The server is hosted on AWS on http://imagefilterjc-env.eba-uspydqaa.eu-west-3.elasticbeanstalk.com:8080
+
+## Project Description
+
 Udagram is a simple cloud application developed alongside the Udacity Cloud Engineering Nanodegree. It allows users to register and log into a web client, post photos to the feed, and process photos using an image filtering microservice.
 
 The project is split into three parts:
