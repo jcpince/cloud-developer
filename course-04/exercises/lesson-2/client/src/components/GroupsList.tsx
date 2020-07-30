@@ -20,6 +20,7 @@ export class GroupsList extends React.PureComponent<GroupsListProps, GroupsListS
 
   handleCreateGroup = () => {
     this.props.history.push(`/groups/create`)
+    console.log("clicked")
   }
 
   async componentDidMount() {
