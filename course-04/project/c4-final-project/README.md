@@ -1,48 +1,5 @@
 # Serverless TODO
 
-## Missing points to meet spec:
-
-### The code is split into multiple layers separating business logic from I/O related code.
-
-Code of Lambda functions is split into multiple files/classes. The business logic of an application is separated from code for database access, file storage, and code related to AWS Lambda.
-
-### Application has sufficient monitoring.
-
-Application has at least some of the following:
-
-Distributed tracing is enabled
-It has a sufficient amount of log statements
-It generates application level metrics
-
-### Data is stored in a table with a composite key.
-
-1:M (1 to many) relationship between users and TODO items is modeled using a DynamoDB table that has a composite key with both partition and sort keys. Should be defined similar to this:
-
-   KeySchema:
-      - AttributeName: partitionKey
-        KeyType: HASH
-      - AttributeName: sortKey
-        KeyType: RANGE
-
-### Scan operation is not used to read data from a database.
-TODO items are fetched using the "query()" method and not "scan()" method (which is less efficient on large datasets)
-
-
-To implement this project, you need to implement a simple TODO application using AWS Lambda and Serverless framework. Search for all comments starting with the `TODO:` in the code to find the placeholders that you need to implement.
-
-
-## Stand out:
-### Fetch a certificate from Auth0 instead of hard coding it in an authorizer.
-### Implement pagination support to work around a DynamoDB limitation that allows up to 1MB of data using a query method.
-
-
-
-
-
-
-
-
-
 # Functionality of the application
 
 This application will allow creating/removing/updating/fetching TODO items. Each TODO item can optionally have an attachment image. Each user only has access to TODO items that he/she has created.

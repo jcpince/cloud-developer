@@ -1,11 +1,20 @@
 import * as AWS  from 'aws-sdk'
 import * as AWSXRay from 'aws-xray-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
+import { TodoItem } from '../models/TodoItem'
+import { TodoUpdate } from '../models/TodoUpdate'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('todoAccess')
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
-import { TodoItem } from '../models/TodoItem'
-import { TodoUpdate } from '../models/TodoUpdate'
+const s3 = new XAWS.S3({
+  signatureVersion: 'v4'
+})
+
+const bucketName = process.env.TODOS_S3_BUCKET
+const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 
 export class TodoAccess {
 
@@ -14,20 +23,26 @@ export class TodoAccess {
     private readonly table = process.env.TODOS_TABLE) {
   }
 
-  async getAllItems(): Promise<TodoItem[]> {
-    console.log('Getting all todo items')
+  async getAllItems(userId: string): Promise<TodoItem[]> {
+    logger.info('Getting all todo items for ' + userId)
 
-    const result = await this.docClient.scan({
-      TableName: this.table
+    const result = await this.docClient.query({
+      TableName: this.table,
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: {
+        ':userId': userId
+      },
+      ScanIndexForward: false
     }).promise()
 
-    console.log('scan done')
+    logger.info('Todos for ' + userId + ' fetched')
 
     const items = result.Items
     return items as TodoItem[]
   }
 
   async createItem(todoItem: TodoItem): Promise<TodoItem> {
+    logger.info('Creating a new todo item with ' + JSON.stringify(todoItem))
     await this.docClient.put({
       TableName: this.table,
       Item: todoItem
@@ -36,20 +51,24 @@ export class TodoAccess {
     return todoItem
   }
 
-  async deleteItem(todoId: string) {
+  async deleteItem(userId:string, todoId: string) {
+    logger.info('Deleting a todo item ' + todoId)
     await this.docClient.delete({
       TableName: this.table,
       Key: {
-          "todoId": todoId
+          "todoId": todoId,
+          "userId": userId
       }
     }).promise()
   }
 
-  async updateItem(todoId: string, update: TodoUpdate) {
+  async updateItem(userId:string, todoId: string, update: TodoUpdate) {
+    logger.info('Updating a todo item ' + todoId + " with " + JSON.stringify(update))
     await this.docClient.update({
       TableName: this.table,
       Key: {
-          "todoId": todoId
+          "todoId": todoId,
+          "userId": userId
       },
       UpdateExpression: "set #nm = :n, dueDate = :dd, done = :dn",
       ExpressionAttributeValues: {
@@ -62,18 +81,25 @@ export class TodoAccess {
       }
     }).promise()
   }
-}
 
-export const todoAccess = new TodoAccess()
+  getUploadUrl(itemId: string): string {
+    logger.info('Getting a storage URL form todo item ' + itemId)
+    return s3.getSignedUrl('putObject', {
+        Bucket: bucketName,
+        Key: itemId,
+        Expires: urlExpiration
+      })
+  }
+}
 
 function createDynamoDBClient() {
   if (process.env.IS_OFFLINE) {
-    console.log('Creating a local DynamoDB instance')
+    logger.info('Creating a local DynamoDB instance')
     return new XAWS.DynamoDB.DocumentClient({
       region: 'localhost',
       endpoint: 'http://localhost:8000'
     })
   }
-  console.log('Creating a remote DynamoDB instance')
+  logger.info('Creating a remote DynamoDB instance')
   return new XAWS.DynamoDB.DocumentClient()
 }

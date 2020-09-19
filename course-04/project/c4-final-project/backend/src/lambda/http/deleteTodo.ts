@@ -1,15 +1,17 @@
 import 'source-map-support/register'
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
-import { todoAccess } from '../../dataLayer/todoAccess'
+import { deleteItem } from '../../businessLogic/todos'
+import { getUserId } from '../utils'
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId: string = event.pathParameters.todoId
 
   // TODO: Remove a TODO item by id
   var statusCode = 200
+  const userId = getUserId(event)
   try {
-    await todoAccess.deleteItem(todoId)
+    await deleteItem(userId, todoId)
   }
   catch (e) {
     console.error(`TodoItem ${todoId} deletion failed:`, e.message)

@@ -2,7 +2,7 @@
 //const apiId = 'xm2j3w47xb'
 //export const apiEndpoint = `https://${apiId}.execute-api.eu-west-3.amazonaws.com/dev`
 
-const apiId = 'j10vg1dsfh'
+const apiId = 'cpz88p02gj'
 export const apiEndpoint = `https://${apiId}.execute-api.us-east-1.amazonaws.com/dev`
 
 
