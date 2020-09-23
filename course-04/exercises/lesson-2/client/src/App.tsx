@@ -18,7 +18,6 @@ export default class App extends Component<AppProps, AppState> {
               <Grid.Column width={16}>
                 <Router>
                   {this.generateMenu()}
-
                   {this.generateCurrentPage()}
                 </Router>
               </Grid.Column>
@@ -27,7 +26,22 @@ export default class App extends Component<AppProps, AppState> {
         </Segment>
       </div>
     )
-  }
+}
+  /*render() {
+    return (
+      <div>
+        <Segment style={{ padding: '8em 0em' }} vertical>
+          <Grid container stackable verticalAlign="middle">
+            <Grid.Row>
+              <Grid.Column width={16}>
+                <GroupsList />
+              </Grid.Column>
+            </Grid.Row>
+          </Grid>
+        </Segment>
+      </div>
+    )
+}*/
 
   generateMenu() {
     return (
@@ -35,6 +49,9 @@ export default class App extends Component<AppProps, AppState> {
         <Menu.Item name="home">
           <Link to="/">Home</Link>
         </Menu.Item>
+          <Menu.Item name="newgroup">
+            <Link to="/groups/create">New group</Link>
+          </Menu.Item>
       </Menu>
     )
   }

@@ -34,4 +34,7 @@ Thumbs.db
 UserInterfaceState.xcuserstate
 node_modules
 venv/
-.vscode
+.vscode.serverless
+.dynamodb
+.webpack
+.serverless
