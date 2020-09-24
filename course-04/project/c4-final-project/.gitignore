@@ -1,7 +1,6 @@
 **/.DS_Store
 .prettierrc.json
 .editorconfig
-client/public/
 images/
 client/.gitignore
 backend/.gitignore
