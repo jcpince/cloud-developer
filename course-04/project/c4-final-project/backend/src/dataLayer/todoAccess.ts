@@ -4,6 +4,7 @@ import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { TodoItem } from '../models/TodoItem'
 import { TodoUpdate } from '../models/TodoUpdate'
 import { createLogger } from '../utils/logger'
+import { S3Event } from 'aws-lambda'
 
 const logger = createLogger('todoAccess')
 
@@ -82,12 +83,42 @@ export class TodoAccess {
     }).promise()
   }
 
-  getUploadUrl(itemId: string): string {
-    logger.info('Getting a storage URL form todo item ' + itemId)
+  async updateDbAttachment(userId : string, todoId : string, key: string) {
+    const newUrl = `https://${bucketName}.s3.amazonaws.com/${key}`
+    logger.info('Updating a todo item attachment url ' + todoId + " for user " + userId + " with " + newUrl)
+    await this.docClient.update({
+      TableName: this.table,
+      Key: {
+        "todoId": todoId,
+        "userId": userId
+      },
+      UpdateExpression: "set attachmentUrl = :n",
+      ExpressionAttributeValues: {
+          ":n": newUrl,
+      }
+    }).promise()
+  }
+
+  async updateItemAttachment(s3Event: S3Event) {
+    for (const record of s3Event.Records) {
+      let buff = Buffer.from(record.s3.object.key, 'base64');
+      let keyascii = buff.toString('ascii');
+      const todoId_userId = keyascii.split(':')
+      const todoId = todoId_userId[0]
+      const userId = todoId_userId[1]
+      await this.updateDbAttachment(userId, todoId, record.s3.object.key)
+    }
+  }
+
+  getUploadUrl(userId:string, itemId: string): string {
+    const buff = Buffer.from(itemId + ':' + userId);
+    const key64 = buff.toString('base64');
+    logger.info('Getting a storage URL form todo item ' + itemId + " from userId " + userId + ": " + key64)
+
     return s3.getSignedUrl('putObject', {
         Bucket: bucketName,
-        Key: itemId,
-        Expires: urlExpiration
+        Key: key64,
+        Expires: urlExpiration,
       })
   }
 }
