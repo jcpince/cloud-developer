@@ -3,6 +3,7 @@ import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { TodoAccess } from '../dataLayer/todoAccess'
 import { TodoItem } from '../models/TodoItem'
 import { TodoUpdate } from '../models/TodoUpdate'
+import { S3Event } from 'aws-lambda'
 
 export const todoAccess = new TodoAccess()
 
@@ -29,14 +30,18 @@ export async function createItem(
     })
 }
 
-export async function deleteItem(userId: string, todoId: string) {
-    return todoAccess.deleteItem(userId, todoId)
+export async function updateItemAttachment(event: S3Event) {
+    return await todoAccess.updateItemAttachment(event)
 }
 
-export function getUploadUrl(itemId: string): string {
-    return todoAccess.getUploadUrl(itemId)
+export async function deleteItem(userId: string, todoId: string) {
+    return await todoAccess.deleteItem(userId, todoId)
+}
+
+export function getUploadUrl(userId: string, itemId: string): string {
+    return todoAccess.getUploadUrl(userId, itemId)
 }
 
 export async function updateItem(userId: string, todoId: string, update: TodoUpdate) {
-    return todoAccess.updateItem(userId, todoId, update)
+    return await todoAccess.updateItem(userId, todoId, update)
 } 

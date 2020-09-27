@@ -9,6 +9,7 @@ plugins:
   - serverless-iam-roles-per-function
   - serverless-dynamodb-local
   - serverless-offline
+  - serverless-offline-sns
 
 provider:
   name: aws
@@ -26,12 +27,19 @@ provider:
     TODOS_TABLE: todos-${self:provider.stage}
     TODOS_S3_BUCKET: sls-todos-${self:provider.environment.S3_BUCKET_UUID}-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-    #_X_AMZN_TRACE_ID: 1234
+    # _X_AMZN_TRACE_ID: 1234
 
 custom:
   serverless-offline:
     port: 3003
     httpPort: 3004
+
+  serverless-offline-sns:
+    port: 3102 # a free port for the sns server to run on
+    debug: false
+    # host: 0.0.0.0 # Optional, defaults to 127.0.0.1 if not provided to serverless-offline
+    # sns-endpoint: http://127.0.0.1:4567 # Optional. Only if you want to use a custom endpoint
+    # accountId: 123456789012 # Optional
 
   dynamodb:
     start:
@@ -54,6 +62,8 @@ custom:
       - name: UpdateTodoRequest
         contentType: application/json
         schema: ${file(models/update-todo-request.json)}
+
+  topicName: attachmentTopic-${self:provider.stage}
 
 functions:
 
@@ -134,7 +144,6 @@ functions:
         Resource:
           - "*"
       
-
   # TODO: Configure this function
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
@@ -174,6 +183,32 @@ functions:
         Action:
           - s3:*
         Resource: arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*
+
+  UpdateURLNotif:
+    environment:
+      STAGE: ${self:provider.stage}
+    handler: src/lambda/s3/newURLNotifications.handler
+    events:
+      - sns:
+          arn:
+            Fn::Join:
+              - ':'
+              - - arn:aws:sns
+                - Ref: AWS::Region
+                - Ref: AWS::AccountId
+                - ${self:custom.topicName}
+          topicName: ${self:custom.topicName}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: "Allow"
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
 
 resources:
   Resources:
@@ -225,10 +260,20 @@ resources:
         ValidateRequestBody: true
         ValidateRequestParameters: false
 
+    AttachmentsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: Attachment bucket topic
+        TopicName: ${self:custom.topicName}
+
     AttachmentsBucket:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:provider.environment.TODOS_S3_BUCKET}
+        NotificationConfiguration:
+          TopicConfigurations:
+            - Event: s3:ObjectCreated:Put
+              Topic: !Ref AttachmentsTopic
         CorsConfiguration:
           CorsRules:
             -
@@ -257,3 +302,21 @@ resources:
               Action: s3:*
               Resource: 'arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*'
         Bucket: !Ref AttachmentsBucket
+
+    SNSTopicPolicy:
+      Type: AWS::SNS::TopicPolicy
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: "*"
+              Action: sns:Publish
+              Resource:
+                !Ref AttachmentsTopic
+              Condition:
+                ArnLike:
+                  AWS:SourceArn: arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}
+        Topics:
+          - !Ref AttachmentsTopic
